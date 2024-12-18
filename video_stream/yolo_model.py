@@ -1,7 +1,8 @@
 import time
 import json
+import requests
 from ultralytics import YOLO
-from config import YOLO_MODEL_PATH, ALERT_FRAMES_THRESHOLD, ALERT_COOLDOWN_TIME
+from config import YOLO_MODEL_PATH, ALERT_FRAMES_THRESHOLD, ALERT_COOLDOWN_TIME, SPEAKER_URL,SPEAKER_IP,COMMAND
 
 # 递归查找包含 "shared" 的键或值，并统计数量
 def find_shared_in_dict(data, search_key="shared"):
@@ -57,5 +58,19 @@ class YOLOModel:
         return results[0].plot()
     def trigger_alert(self):
         print("Alarm: Shared Bikes Detected!")
+        # 发给扬声器消息的代码加在这里
+        try:
+            # Send the HTTP GET request
+            response = requests.get(SPEAKER_URL)
+    
+            # Check the response
+            if response.status_code == 200:
+                print(f"Command sent successfully: {command}")
+                print(f"Response from loudspeaker: {response.text}")
+            else:
+                print(f"Failed to send command. HTTP status code: {response.status_code}")
+        except requests.exceptions.RequestException as e:
+            print(f"Error sending command: {e}")
+        
         with open("alerts.log", "a") as log_file:
-            log_file.write(f"Alarm: Shared Bikes Detected at{time.strftime('%Y-%m-%d %H:%M:%S')}\n") #警报在这里
+            log_file.write(f"Alarm: Shared Bikes Detected at {time.strftime('%Y-%m-%d %H:%M:%S')}\n") #警报在这里
